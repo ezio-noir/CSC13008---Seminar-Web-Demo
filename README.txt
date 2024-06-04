@@ -1,0 +1,3 @@
+Multer: Nếu không có Multer, việc xử lý file upload sẽ rất phức tạp. Phải tự phân tích dữ liệu multipart/form-data và lưu file vào đĩa. Multer giúp đơn giản hóa quá trình này.
+express.json() và express.urlencoded(): Nếu không có các middleware này, sẽ không thể truy cập vào dữ liệu được gửi lên từ các form hoặc các yêu cầu AJAX. Các middleware này tự động phân tích dữ liệu và đưa nó vào đối tượng req.body để có thể sử dụng trong các route xử lý.
+express.static(): Nếu không có middleware này, thì sẽ không thể truy cập vào các file tĩnh như HTML, CSS, JavaScript từ trình duyệt.

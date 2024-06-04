@@ -20,39 +20,81 @@
   </head>
 
   <body>
-    <div class="file-upload">
-      <button
-        class="file-upload-btn"
-        type="button"
-        onclick="$('.file-upload-input').trigger( 'click' )"
-      >
-        Add Image
-      </button>
+    <div class="d-flex">
+      <div class="file-upload">
+        <button
+          class="file-upload-btn"
+          type="button"
+          onclick="$('.file-upload-input').trigger( 'click' )"
+        >
+          Add Image
+        </button>
 
-      <div class="image-upload-wrap">
-        <input
-          class="file-upload-input"
-          type="file"
-          onchange="readURL(this);"
-        />
-        <div class="drag-text">
-          <h3>Drag and drop a file or select add Image</h3>
+        <div class="image-upload-wrap">
+          <input
+            class="file-upload-input"
+            type="file"
+            onchange="readURL(this);"
+          />
+          <div class="drag-text">
+            <h3>Drag and drop a file or select add Image</h3>
+          </div>
         </div>
-      </div>
-      <div class="file-upload-content">
-        <img class="file-upload-image" src="#" alt="your image" />
-        <div class="image-title-wrap">
-          <button type="button" onclick="removeUpload()" class="remove-image">
-            Remove <span class="image-title">Uploaded Image</span>
+        <div class="file-upload-content">
+          <img class="file-upload-image" src="#" alt="your image" />
+          <div class="image-title-wrap">
+            <button type="button" onclick="removeUpload()" class="remove-image">
+              Remove <span class="image-title">Uploaded Image</span>
+            </button>
+          </div>
+          <button
+            id="addToListBtn"
+            class="btn btn-primary mt-3"
+            onclick="uploadFiles()"
+          >
+            Add to List
           </button>
         </div>
+      </div>
+
+      <div class="file-upload" id="multipleFileUpload">
         <button
-          id="addToListBtn"
-          class="btn btn-primary mt-3"
-          onclick="uploadFiles()"
+          class="file-upload-btn"
+          type="button"
+          onclick="$('#multipleFileUpload .file-upload-input').trigger( 'click' )"
         >
-          Add to List
+          Add Multiple Files
         </button>
+
+        <div class="image-upload-wrap">
+          <input
+            class="file-upload-input"
+            type="file"
+            onchange="readMultipleFiles(this);"
+            multiple
+          />
+          <div class="drag-text">
+            <h3>Drag and drop multiple files or select Add Multiple Files</h3>
+          </div>
+        </div>
+        <div class="file-upload-content">
+          <div class="image-title-wrap">
+            <button
+              type="button"
+              onclick="removeMultipleUpload()"
+              class="remove-image"
+            >
+              Remove <span class="image-title">Uploaded Files</span>
+            </button>
+          </div>
+          <button
+            id="addMultipleToListBtn"
+            class="btn btn-primary mt-3"
+            onclick="uploadMultipleFiles()"
+          >
+            Add to List
+          </button>
+        </div>
       </div>
     </div>
 

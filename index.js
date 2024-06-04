@@ -63,96 +63,95 @@ function uploadFiles() {
           fileList.append(newListItem);
           uploadStatus.text("Successfully uploaded").addClass("text-success");
           removeUpload();
-
-          // Cập nhật danh sách file sau khi upload hoàn tất (thành công hoặc thất bại)
-          fetch(`${apiBaseUrl}/files`)
-            .then(response => response.json())
-            .then(data => {
-              fileList.empty(); // Xóa danh sách cũ
-              data.forEach(file => {
-                const newListItem = $("<li>").addClass("list-group-item").text(file.originalName);
-                newListItem.data('filePath', file.path);
-                newListItem.data('fileType', file.type);
-                fileList.append(newListItem);
-              });
-            })
-            .catch(error => {
-              console.error("Error fetching file list:", error);
-            });
-
         } else {
-          uploadStatus.text(data.error).addClass('text-danger');
+          uploadStatus.text("Upload failed: " + (data.error || "Unknown error")).addClass('text-danger'); // Hiển thị thông báo lỗi từ server (nếu có)
         }
+        updateFileList(); // Cập nhật danh sách file sau khi upload
       })
       .catch(error => {
         console.error("Upload error:", error);
         uploadStatus.text("Upload failed: " + error.message).addClass('text-danger');
+        updateFileList(); // Cập nhật danh sách file sau khi upload
       });
   }
 }
 
-function displayFileContent(fileInfo) {
-  const filePath = fileInfo.data('filePath');
-  const fileType = fileInfo.data('fileType');
+// Hàm cập nhật danh sách file
+function updateFileList() {
+  const fileList = $("#fileList");
+  const apiBaseUrl = 'http://localhost:3000';
 
-  // Tạo một modal Bootstrap để hiển thị nội dung file
-  const modal = `
-    <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="fileModalLabel">${fileInfo.text()}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body" id="fileModalContent">
-            </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  // Thêm modal vào DOM
-  $('body').append(modal);
-
-  // Lấy phần tử nội dung của modal
-  const modalContent = $('#fileModalContent');
-
-  // Kiểm tra loại file và hiển thị tương ứng
-  if (fileType.startsWith('image/')) {
-    // Hiển thị ảnh
-    const img = new Image();
-    img.src = filePath;
-    img.classList.add('img-fluid'); // Thêm class để ảnh responsive
-    modalContent.append(img);
-  } else if (fileType.startsWith('video/')) {
-    // Hiển thị video
-    const video = document.createElement('video');
-    video.src = filePath;
-    video.controls = true;
-    video.classList.add('w-100'); // Thêm class để video chiếm toàn bộ chiều rộng
-    modalContent.append(video);
-  } else if (fileType.startsWith('text/')) {
-    // Hiển thị nội dung text
-    fetch(filePath)
-      .then(response => response.text())
-      .then(textContent => {
-        modalContent.text(textContent);
+  fetch(`${apiBaseUrl}/files`)
+    .then(response => response.json())
+    .then(data => {
+      fileList.empty();
+      data.forEach(file => {
+        const newListItem = $("<li>").addClass("list-group-item").text(file.originalName);
+        newListItem.data('filePath', file.path);
+        newListItem.data('fileType', file.type);
+        fileList.append(newListItem);
       });
-  } else if (fileType === 'application/pdf') {
-    // Hiển thị PDF (có thể cần thư viện hỗ trợ)
-    // Gợi ý: Sử dụng thư viện pdf.js để hiển thị PDF
-    // ...
+    })
+    .catch(error => {
+      console.error("Error fetching file list:", error);
+    });
+}
+
+// Gọi hàm cập nhật danh sách file khi trang web được tải
+$(document).ready(updateFileList);
+
+function readMultipleFiles(input) {
+  if (input.files && input.files.length > 0) {
+    $('#multipleFileUpload .image-upload-wrap').hide();
+    $('#multipleFileUpload .file-upload-content').show();
+    $('#multipleFileUpload .image-title').html(`${input.files.length} files selected`);
   } else {
-    // Xử lý các loại file khác hoặc thông báo không hỗ trợ
-    modalContent.text('File type not supported');
+    removeMultipleUpload();
   }
-
-  // Hiển thị modal
-  const fileModal = new bootstrap.Modal(document.getElementById('fileModal'));
-  fileModal.show();
 }
 
-$("#fileList").on("click", "li", function () {
-  const fileInfo = $(this); // Truyền trực tiếp jQuery object
-  displayFileContent(fileInfo);
-});
+function removeMultipleUpload() {
+  $('#multipleFileUpload .file-upload-input').replaceWith($('#multipleFileUpload .file-upload-input').clone());
+  $('#multipleFileUpload .file-upload-content').hide();
+  $('#multipleFileUpload .image-upload-wrap').show();
+}
+
+function uploadMultipleFiles() {
+  const fileInput = $("#multipleFileUpload .file-upload-input")[0]; // Lấy input từ layout multiple
+  const fileList = $("#fileList");
+  const uploadStatus = $("#uploadStatus");
+  const apiBaseUrl = 'http://localhost:3000';
+
+  if (fileInput.files.length > 0) {
+    const formData = new FormData();
+    for (const file of fileInput.files) {
+      formData.append('files', file);
+    }
+
+    fetch(`${apiBaseUrl}/uploadMultiple`, { // Gọi API uploadMultiple
+      method: 'POST',
+      body: formData
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          data.filePaths.forEach(filePath => {
+            const fileName = filePath.split('/').pop();
+            const newListItem = $("<li>").addClass("list-group-item").text(fileName);
+            newListItem.data('filePath', filePath);
+            fileList.append(newListItem);
+          });
+          uploadStatus.text("Successfully uploaded").addClass("text-success");
+          removeMultipleUpload(); // Xóa nội dung sau khi upload thành công
+        } else {
+          uploadStatus.text("Upload failed: " + (data.error || "Unknown error")).addClass('text-danger');
+        }
+        updateFileList();
+      })
+      .catch(error => {
+        console.error("Upload error:", error);
+        uploadStatus.text("Upload failed: " + error.message).addClass('text-danger');
+        updateFileList();
+      });
+  }
+}

@@ -2,19 +2,25 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const cors = require('cors');
 
 const app = express();
-const port = 3000;
-const cors = require('cors');
+const port = process.env.PORT || 3000;
+
+// Cấu hình CORS (cho phép tất cả các origin trong ví dụ này)
 app.use(cors({
-    origin: '*', // Cho phép yêu cầu từ cổng 5500
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true // Cho phép gửi cookie và xác thực HTTP
+    origin: '*',
+    methods: ['GET', 'POST'], // Chỉ cho phép các phương thức cần thiết
+    allowedHeaders: ['Content-Type', 'Authorization'] // Chỉ định header được phép
 }));
 
 const dataFilePath = path.join(__dirname, 'uploadedFiles.json');
+const uploadDirectory = path.join(__dirname, 'uploads');
 
-// Đọc dữ liệu từ file JSON (hoặc khởi tạo nếu chưa có)
+// Đảm bảo thư mục uploads tồn tại
+fs.mkdirSync(uploadDirectory, { recursive: true }); // Tạo thư mục nếu chưa có
+
+// Đọc dữ liệu từ file JSON
 let uploadedFiles = [];
 try {
     const data = fs.readFileSync(dataFilePath, 'utf-8');
@@ -27,32 +33,30 @@ try {
     }
 }
 
+// Cấu hình Multer
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads');
-    },
+    destination: uploadDirectory, // Sử dụng đường dẫn tuyệt đối
     filename: (req, file, cb) => {
         cb(null, Date.now() + '-' + file.originalname);
     }
 });
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 1024 * 1024 * 500 }
+});
 
-const upload = multer({ storage: storage });
-
-app.use(express.static(__dirname));
-// cấu hình để đọc dữ liệu gửi lên theo phương thức POST
+// Cấu hình middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-
+app.use(express.static(uploadDirectory)); // Phục vụ file tĩnh từ thư mục uploads
 
 // API upload file
 app.post('/upload', upload.single('file'), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ success: false, error: 'No file uploaded.' });
-    }
-
     try {
-        // Lưu thông tin file vào mảng
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: 'No file uploaded.' });
+        }
+
         uploadedFiles.push({
             name: req.file.filename,
             originalName: req.file.originalname,
@@ -60,17 +64,42 @@ app.post('/upload', upload.single('file'), (req, res) => {
             type: req.file.mimetype
         });
 
-        // Ghi dữ liệu vào file JSON
         fs.writeFileSync(dataFilePath, JSON.stringify(uploadedFiles, null, 2));
-
         res.json({ success: true, filePath: `/uploads/${req.file.filename}` });
+
     } catch (err) {
-        console.error('Error saving file data:', err);
-        res.status(500).json({ success: false, error: 'Error saving file data' });
+        console.error('Error uploading file:', err);
+        res.status(500).json({ success: false, error: 'Internal server error' });
     }
 });
 
-// API lấy danh sách file đã upload
+// API upload nhiều file
+app.post('/uploadMultiple', upload.array('files'), (req, res) => {
+    try {
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ success: false, error: 'No files uploaded.' });
+        }
+
+        const filePaths = [];
+        req.files.forEach(file => {
+            uploadedFiles.push({
+                name: file.filename,
+                originalName: file.originalname,
+                path: `/uploads/${file.filename}`,
+                type: file.mimetype
+            });
+            filePaths.push(`/uploads/${file.filename}`);
+        });
+
+        fs.writeFileSync(dataFilePath, JSON.stringify(uploadedFiles, null, 2));
+        res.json({ success: true, filePaths: filePaths });
+    } catch (err) {
+        console.error('Error uploading files:', err);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
+
+// API lấy danh sách file
 app.get('/files', (req, res) => {
     res.json(uploadedFiles);
 });

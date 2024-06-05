@@ -20,7 +20,7 @@
 
     <body>
         <div class="d-flex">
-            <div class="file-upload">
+            <div class="file-upload" id="singleFileUpload">
                 <button
                     class="file-upload-btn"
                     type="button"
@@ -56,7 +56,7 @@
                         class="btn btn-primary mt-3"
                         onclick="uploadFiles()"
                     >
-                        Add to List
+                        Upload
                     </button>
                 </div>
             </div>
@@ -100,7 +100,7 @@
                         class="btn btn-primary mt-3"
                         onclick="uploadMultipleFiles()"
                     >
-                        Add to List
+                        Upload
                     </button>
                 </div>
             </div>
@@ -149,19 +149,19 @@
                         class="btn btn-primary mt-3"
                         onclick="uploadResumable()"
                     >
-                        Add to List
+                        Upload
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="container mt-5">
+        <!-- <div class="container mt-5">
             <h3>Uploaded Files</h3>
             <ul class="list-group" id="fileList">
                 <li class="list-group-item"></li>
             </ul>
             <div id="uploadStatus" class="mt-3"></div>
-        </div>
+        </div> -->
 
         <!-- Bootstrap JavaScript Libraries -->
         <script

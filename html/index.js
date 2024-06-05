@@ -3,19 +3,19 @@ function readURL(input) {
       const file = input.files[0];
       const fileName = file.name;
       const fileType = file.type;
-      $('.image-upload-wrap').hide();
-      $('.file-upload-content').show();
-      $('.image-title').html(fileName);
+      $('#singleFileUpload .image-upload-wrap').hide();
+      $('#singleFileUpload .file-upload-content').show();
+      $('#singleFileUpload .image-title').html(fileName);
   
       if (fileType.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = function (e) {
-          $('.file-upload-image').attr('src', e.target.result);
-          $('.file-upload-image').show();
+          $('#singleFileUpload .file-upload-image').attr('src', e.target.result);
+          $('#singleFileUpload .file-upload-image').show();
         };
         reader.readAsDataURL(file);
       } else {
-        $('.file-upload-image').hide();
+        $('#singleFileUpload .file-upload-image').hide();
       }
   
     } else {
@@ -39,14 +39,14 @@ function uploadFiles() {
   const fileInput = $(".file-upload-input")[0];
   const fileList = $("#fileList");
   const uploadStatus = $("#uploadStatus");
-  const apiBaseUrl = 'http://localhost:3001';
+  const apiBaseUrl = 'http://localhost:3001/api';
 
   if (fileInput.files.length > 0) {
     const file = fileInput.files[0];
     const formData = new FormData();
     formData.append('file', file);
 
-    fetch(`${apiBaseUrl}/upload`, {
+    fetch(`${apiBaseUrl}/upload-single`, {
       method: 'POST',
       body: formData
     })
@@ -65,14 +65,14 @@ function uploadFiles() {
           uploadStatus.text("Successfully uploaded").addClass("text-success");
           removeUpload();
         } else {
-          uploadStatus.text("Upload failed: " + (data.error || "Unknown error")).addClass('text-danger'); // Hiển thị thông báo lỗi từ server (nếu có)
+          uploadStatus.text("Upload failed: " + (data.error || "Unknown error")).addClass('text-danger');
         }
-        updateFileList(); // Cập nhật danh sách file sau khi upload
+        // updateFileList();
       })
       .catch(error => {
         console.error("Upload error:", error);
         uploadStatus.text("Upload failed: " + error.message).addClass('text-danger');
-        updateFileList(); // Cập nhật danh sách file sau khi upload
+        // updateFileList();
       });
   }
 }
@@ -99,7 +99,7 @@ function updateFileList() {
 }
 
 // Gọi hàm cập nhật danh sách file khi trang web được tải
-$(document).ready(updateFileList);
+// $(document).ready(updateFileList);
 
 function readMultipleFiles(input) {
   if (input.files && input.files.length > 0) {
@@ -121,7 +121,7 @@ function uploadMultipleFiles() {
   const fileInput = $("#multipleFileUpload .file-upload-input")[0]; // Lấy input từ layout multiple
   const fileList = $("#fileList");
   const uploadStatus = $("#uploadStatus");
-  const apiBaseUrl = 'http://localhost:3001';
+  const apiBaseUrl = 'http://localhost:3001/api';
 
   if (fileInput.files.length > 0) {
     const formData = new FormData();
@@ -129,7 +129,7 @@ function uploadMultipleFiles() {
       formData.append('files', file);
     }
 
-    fetch(`${apiBaseUrl}/uploadMultiple`, { // Gọi API uploadMultiple
+    fetch(`${apiBaseUrl}/upload-multiple`, { // Gọi API uploadMultiple
       method: 'POST',
       body: formData
     })
@@ -147,12 +147,12 @@ function uploadMultipleFiles() {
         } else {
           uploadStatus.text("Upload failed: " + (data.error || "Unknown error")).addClass('text-danger');
         }
-        updateFileList();
+        // updateFileList();
       })
       .catch(error => {
         console.error("Upload error:", error);
         uploadStatus.text("Upload failed: " + error.message).addClass('text-danger');
-        updateFileList();
+        // updateFileList();
       });
   }
 }

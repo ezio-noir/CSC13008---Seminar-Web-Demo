@@ -55,7 +55,7 @@ const chunkUpload = multer({
     storage: chunkStorage
 });
 
-router.post('/upload-single', upload.single('image'), (req, res) => {
+router.post('/upload-single', upload.single('file'), (req, res) => {
     try {
         res.send({
             status: 'Upload success.',

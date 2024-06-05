@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
     <head>
         <title>Upload file</title>
@@ -139,10 +139,21 @@
                         </button>
                     </div>
                     <div id="chunkForm">
+                        <div id="totalChunks"></div>
                         <label for="startChunk">Start Chunk:</label>
-                        <input type="number" id="startChunk" name="startChunk" min="0"><br>
+                        <input
+                            type="number"
+                            id="startChunk"
+                            name="startChunk"
+                            min="0"
+                        /><br />
                         <label for="endChunk">End Chunk:</label>
-                        <input type="number" id="endChunk" name="endChunk" min="0">
+                        <input
+                            type="number"
+                            id="endChunk"
+                            name="endChunk"
+                            min="0"
+                        />
                     </div>
                     <button
                         id="addMultipleToListBtn"
